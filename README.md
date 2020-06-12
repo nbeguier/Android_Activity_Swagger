@@ -29,11 +29,13 @@ Found parent: Activity
 
 ## Tests
 
+```bash
 cd tests/
-Android_Activity_Swagger.py com.example.activity.WrongName
-Android_Activity_Swagger.py 'com.example.activity.WrongName$TrueName'
-Android_Activity_Swagger.py com.example.activity.MyLauncherActivity
-Android_Activity_Swagger.py com.example.ui.RoutingActivity
+../Android_Activity_Swagger.py com.example.activity.WrongName
+../Android_Activity_Swagger.py 'com.example.activity.WrongName$TrueName'
+../Android_Activity_Swagger.py com.example.activity.MyLauncherActivity
+../Android_Activity_Swagger.py com.example.ui.RoutingActivity
+```
 
 # License
 Android_Activity_Swagger is an open source and free software released under the [AGPL](https://github.com/nbeguier/Android_Activity_Swagger/blob/master/LICENSE) (Affero General Public License). We are committed to ensure that Android_Activity_Swagger will remain a free and open source project on the long-run.
