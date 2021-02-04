@@ -2,7 +2,7 @@
 """
 Android Activity Swagger
 
-Copyright (C) 2020  Nicolas Beguier
+Copyright (C) 2020-2021  Nicolas Beguier
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU Affero General Public License as published
@@ -29,9 +29,10 @@ import sys
 # Debug
 # from pdb import set_trace as st
 
-VERSION = '1.0.0'
+VERSION = '1.1.0'
 
 ACTIVITY = sys.argv[1]
+VERBOSE = len(sys.argv) == 3
 
 def update_class(current_class, line):
     """
@@ -42,23 +43,23 @@ def update_class(current_class, line):
         return match.group(2)
     return current_class
 
-def print_extras(line, line_n, activity_file_path, current_class):
+def print_extras(context, key=None):
     """
     Display found extra
     """
-    if re.search("\.(get|has)[a-zA-Z]*Extras?\(", line):
-        color_line = re.sub("(get|has)[a-zA-Z]*Extras?", lambda m: "\x1b[38;5;75m{}\x1b[0m".format(m.group()), line[:-1])
-        print("[{}:+{}] [{}] {}".format(activity_file_path, line_n, current_class, color_line))
-        return True
-    return False
+    color_line = re.sub("(get|has)[a-zA-Z]*Extras?", lambda m: "\x1b[38;5;75m{}\x1b[0m".format(m.group()), context['line'][:-1])
+    if key is not None:
+        color_line = re.sub(key, lambda m: "\x1b[38;5;76m{}\x1b[0m".format(m.group()), color_line)
+    print("[{}:+{}] [{}] {}".format(context['activity_file_path'], context['line_n'], context['current_class'], color_line))
+    return True
 
-def print_data(line, line_n, activity_file_path, current_class):
+def print_data(context):
     """
     Display found data
     """
-    if re.search("\.getData[a-zA-Z]*\(", line):
-        color_line = re.sub("getData[a-zA-Z]*", lambda m: "\x1b[38;5;76m{}\x1b[0m".format(m.group()), line[:-1])
-        print("[{}:+{}] [{}] {}".format(activity_file_path, line_n, current_class, color_line))
+    if re.search("\.getData[a-zA-Z]*\(", context['line']):
+        color_line = re.sub("getData[a-zA-Z]*", lambda m: "\x1b[38;5;76m{}\x1b[0m".format(m.group()), context['line'][:-1])
+        print("[{}:+{}] [{}] {}".format(context['activity_file_path'], context['line_n'], context['current_class'], color_line))
         return True
     return False
 
@@ -72,43 +73,54 @@ def update_parent(value, line, activity_name):
         return line.split("extends")[1].split()[0]
     return None
 
-def update_swagger(swagger, line, current_class):
+def update_swagger(context, swagger):
     """
     Updates the swagger
     """
-    if current_class in swagger['_parsing']:
-        for var in swagger['_parsing'][current_class]:
-            type_match = re.search("{}\.get([a-zA-Z]+)\(".format(var), line)
+    added = False
+
+    if context['current_class'] in swagger['_parsing']:
+        for var in swagger['_parsing'][context['current_class']]:
+            type_match = re.search("{}\.get([a-zA-Z]+)\(".format(var), context['line'])
             if type_match:
                 key_type = type_match.group(1)
                 key_name = '_unknown'
-                key_match = re.search("{}\.get[a-zA-Z]+\(\"?([a-zA-Z\_\.]+)\"?".format(var), line)
+                key_match = re.search("{}\.get[a-zA-Z]+\(\"?([a-zA-Z\_\.]+)\"?".format(var), context['line'])
                 if key_match:
                     key_name = key_match.group(1)
                 if key_type not in swagger['_result']:
                     swagger['_result'][key_type] = list()
-                swagger['_result'][key_type].append(key_name)
+                if key_name not in swagger['_result'][key_type]:
+                    swagger['_result'][key_type].append(key_name)
+                print_extras(context, key=key_name)
+                added = True
 
     # X = y.getExtras()
-    getextras_match = re.search("([a-zA-Z\.]+) = [a-zA-Z\.\(\)]+\.getExtras\(\)", line)
+    getextras_match = re.search("([a-zA-Z\.]+) = [a-zA-Z\.\(\)]+\.getExtras\(\)", context['line'])
     if getextras_match:
         var = getextras_match.group(1)
-        if current_class not in swagger['_parsing']:
-            swagger['_parsing'][current_class] = dict()
-        if var not in swagger['_parsing'][current_class]:
-            swagger['_parsing'][current_class][var] = ''
+        if context['current_class'] not in swagger['_parsing']:
+            swagger['_parsing'][context['current_class']] = dict()
+        if var not in swagger['_parsing'][context['current_class']]:
+            swagger['_parsing'][context['current_class']][var] = ''
 
     # .getXExtra("Y"
-    getextra_match = re.search("\.get([a-zA-Z]+)Extra\(", line)
+    getextra_match = re.search("\.get([a-zA-Z]+)Extra\(", context['line'])
     if getextra_match:
         key_type = getextra_match.group(1)
         key_name = '_unknown'
-        key_match = re.search("\.get[a-zA-Z]+\(\"?([a-zA-Z\_\.]+)\"?", line)
+        key_match = re.search("\.get[a-zA-Z]+\(\"?([a-zA-Z\_\.]+)\"?", context['line'])
         if key_match:
             key_name = key_match.group(1)
         if key_type not in swagger['_result']:
             swagger['_result'][key_type] = list()
-        swagger['_result'][key_type].append(key_name)
+        if key_name not in swagger['_result'][key_type]:
+            swagger['_result'][key_type].append(key_name)
+        print_extras(context, key=key_name)
+        added = True
+
+    if not added and re.search("\.(get|has)[a-zA-Z]*Extras?\(", context['line']):
+        print_extras(context)
 
     return swagger
 
@@ -130,8 +142,9 @@ def get_activity_params(activity, swagger, is_recursive=False):
                 print("{} doesn't exist !".format(activity_file_path))
             return
 
-    print("Found activity: {}".format(activity))
-    print("Activity's file path: {}".format(activity_file_path))
+    if VERBOSE:
+        print("Found activity: {}".format(activity))
+        print("Activity's file path: {}".format(activity_file_path))
 
     parent_name = None
 
@@ -140,15 +153,21 @@ def get_activity_params(activity, swagger, is_recursive=False):
         current_class = None
         for line in activity_file.readlines():
             current_class = update_class(current_class, line)
-            print_extras(line, line_n, activity_file_path, current_class)
-            print_data(line, line_n, activity_file_path, current_class)
-            swagger = update_swagger(swagger, line, current_class)
+            context = {
+                'activity_file_path': activity_file_path,
+                'current_class': current_class,
+                'line': line,
+                'line_n': line_n,
+            }
+            print_data(context)
+            swagger = update_swagger(context, swagger)
             parent_name = update_parent(parent_name, line, activity_name)
             line_n += 1
 
     if parent_name:
-        print("Found parent: {}".format(parent_name))
-        print("")
+        if VERBOSE:
+            print("Found parent: {}".format(parent_name))
+            print("")
         parent = None
         with open(activity_file_path, "r") as activity_file:
             for line in activity_file.readlines():

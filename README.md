@@ -7,7 +7,7 @@ Give the Swagger (or hints) of Android Activities from apk
 
 ```bash
 $ cd tests/
-$ ../Android_Activity_Swagger.py com.example.activity.WrongName
+$ ../Android_Activity_Swagger.py com.example.activity.WrongName --verbose
 Found activity: com.example.activity.WrongName
 Activity's file path: com/example/activity/WrongName.java
 [com/example/activity/WrongName.java:+43] [onCreate]                 this.f4672b = getIntent().getExtras();
@@ -41,4 +41,4 @@ cd tests/
 Android_Activity_Swagger is an open source and free software released under the [AGPL](https://github.com/nbeguier/Android_Activity_Swagger/blob/master/LICENSE) (Affero General Public License). We are committed to ensure that Android_Activity_Swagger will remain a free and open source project on the long-run.
 
 # Copyright
-Copyright (C) 2020  Nicolas Beguier; ([nbeguier](https://beguier.eu/nicolas/) - nicolas_beguier[at]hotmail[dot]com)
+Copyright (C) 2020-2021  Nicolas Beguier; ([nbeguier](https://beguier.eu/nicolas/) - nicolas_beguier[at]hotmail[dot]com)
