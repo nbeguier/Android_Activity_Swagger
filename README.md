@@ -117,8 +117,8 @@ cd tests/
 ../Android_Activity_Swagger.py com.example.ui.RoutingActivity -p com.example --adb
 ```
 
-# License
+## License
 Android_Activity_Swagger is an open source and free software released under the [AGPL](https://github.com/nbeguier/Android_Activity_Swagger/blob/master/LICENSE) (Affero General Public License). We are committed to ensure that Android_Activity_Swagger will remain a free and open source project on the long-run.
 
-# Copyright
+## Copyright
 Copyright (C) 2020-2021  Nicolas Beguier; ([nbeguier](https://beguier.eu/nicolas/) - nicolas_beguier[at]hotmail[dot]com)
