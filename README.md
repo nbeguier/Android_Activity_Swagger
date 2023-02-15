@@ -14,27 +14,37 @@ $ cd decompiled_apk/
 
 ## Usage
 
-```
+```bash
 $ python Android_Activity_Swagger.py --help
-usage: Android_Activity_Swagger.py [-h] [--version] [--package PACKAGE]
-                                   [--adb] [--verbose]
-                                   activity
+usage: Android_Activity_Swagger.py [-h] [--version] [--package PACKAGE] [--adb] [--verbose] [--read-manifest] activity
 
 positional arguments:
   activity              Activity
 
-optional arguments:
+options:
   -h, --help            show this help message and exit
   --version             show program's version number and exit
   --package PACKAGE, -p PACKAGE
                         Package.
   --adb, -a             ADB helper.
   --verbose, -v         Verbose output.
+  --read-manifest, -r   Read AndroidManifest.xml and extract exported activities.
 ```
 
 ## Examples
 
 ```bash
+# List all exported activities
+$ python Android_Activity_Swagger.py -r tests/AndroidManifest.xml
+Package: com.example
+
+com.example.activity.MyLauncherActivity
+com.example.activity.WrongName
+com.example.ui.RoutingActivity
+```
+
+```bash
+# Display com.example.activity.WrongName
 $ cd tests/
 
 $ python ../Android_Activity_Swagger.py com.example.activity.WrongName
@@ -60,6 +70,7 @@ $ python ../Android_Activity_Swagger.py com.example.activity.WrongName
 ```
 
 ```bash
+# Display com.example.activity.WrongName with verbosity
 $ python ../Android_Activity_Swagger.py com.example.activity.WrongName --verbose
 Found activity: com.example.activity.WrongName
 Activity's file path: com/example/activity/WrongName.java
@@ -87,6 +98,7 @@ Found parent: Activity
 ```
 
 ```bash
+# Display com.example.activity.WrongName with some adb command example
 $ python ../Android_Activity_Swagger.py com.example.activity.WrongName -p com.example --adb
 [com/example/activity/WrongName.java:+43] [onCreate]                 this.f4672b = getIntent().getExtras();
 [com/example/activity/WrongName.java:+53] [onCreate]             if (this.f4672b != null && this.f4672b.getBoolean("open_from_notification", false)) {

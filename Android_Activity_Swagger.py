@@ -25,6 +25,7 @@ from argparse import ArgumentParser
 import json
 from pathlib import Path
 import re
+import xml.etree.ElementTree as ET
 
 # Debug
 # from pdb import set_trace as st
@@ -120,6 +121,32 @@ def update_swagger(context, swagger):
         print_extras(context)
 
     return swagger
+
+def read_manifest(manifest_file, verbosity=False):
+    """
+    Reads the AndroidManifest.xml and extract exported activities
+    """
+    manifest_path = Path(manifest_file)
+    if not manifest_path.exists():
+        print(f'"{manifest_file}" cannot be found...')
+        return
+
+    tree = ET.parse(manifest_path)
+    root = tree.getroot()
+
+    print(f'Package: {root.get("package")}')
+    print('')
+
+    exported_activities = []
+
+    for activity in root.findall(".//activity"):
+        activity_name = activity.get('{http://schemas.android.com/apk/res/android}name')
+        is_exported = activity.get('{http://schemas.android.com/apk/res/android}exported')
+        if is_exported and is_exported.lower() == 'true':
+            exported_activities.append(activity_name)
+
+    for activity in exported_activities:
+        print(activity)
 
 def get_activity_params(activity, swagger, is_recursive=False, verbosity=False):
     """
@@ -253,15 +280,20 @@ def main():
                         default=False, help='ADB helper.')
     parser.add_argument('--verbose', '-v', action='store_true',
                         default=False, help='Verbose output.')
+    parser.add_argument('--read-manifest', '-r', action='store_true',
+                        default=False, help='Read AndroidManifest.xml and extract exported activities.')
     args = parser.parse_args()
-    swagger = {'_result': {}, '_parsing': {}}
-    get_activity_params(args.activity, swagger, verbosity=args.verbose)
-    print(json.dumps(swagger['_result'], sort_keys=True, indent=4, separators=(',', ': ')))
-    if args.adb:
-        if not args.package:
-            print('You should define the package to view ADB helper')
-        else:
-            print_adb_helper(swagger['_result'], args.activity, args.package)
+    if args.read_manifest:
+        read_manifest(args.activity, verbosity=args.verbose)
+    else:
+        swagger = {'_result': {}, '_parsing': {}}
+        get_activity_params(args.activity, swagger, verbosity=args.verbose)
+        print(json.dumps(swagger['_result'], sort_keys=True, indent=4, separators=(',', ': ')))
+        if args.adb:
+            if not args.package:
+                print('You should define the package to view ADB helper')
+            else:
+                print_adb_helper(swagger['_result'], args.activity, args.package)
 
 if __name__ == '__main__':
     main()
