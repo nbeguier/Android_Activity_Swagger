@@ -36,7 +36,7 @@ def update_class(current_class, line):
     """
     Updates the current class if a new is found in line
     """
-    match = re.search('(public|private) [a-zA-Z\ ]+ ([a-zA-Z]+)\(', line)
+    match = re.search('(public|private) [a-zA-Z\\ ]+ ([a-zA-Z]+)\\(', line)
     if match:
         return match.group(2)
     return current_class
@@ -55,7 +55,7 @@ def print_data(context):
     """
     Display found data
     """
-    if re.search('\.getData[a-zA-Z]*\(', context['line']):
+    if re.search('\\.getData[a-zA-Z]*\\(', context['line']):
         color_line = re.sub('getData[a-zA-Z]*', lambda m: f'\x1b[38;5;76m{m.group()}\x1b[0m', context['line'][:-1])
         print(f"[{context['activity_file_path']}:+{context['line_n']}] [{context['current_class']}] {color_line}")
         return True
@@ -79,45 +79,45 @@ def update_swagger(context, swagger):
 
     if context['current_class'] in swagger['_parsing']:
         for var in swagger['_parsing'][context['current_class']]:
-            type_match = re.search("{}\.get([a-zA-Z]+)\(".format(var), context['line'])
+            type_match = re.search(f'{var}\\.get([a-zA-Z]+)\\(', context['line'])
             if type_match:
                 key_type = type_match.group(1)
                 key_name = '_unknown'
-                key_match = re.search("{}\.get[a-zA-Z]+\(\"?([a-zA-Z\_\.]+)\"?".format(var), context['line'])
+                key_match = re.search(f'{var}\\.get[a-zA-Z]+\\(\"?([a-zA-Z_\\.]+)\"?', context['line'])
                 if key_match:
                     key_name = key_match.group(1)
                 if key_type not in swagger['_result']:
-                    swagger['_result'][key_type] = list()
+                    swagger['_result'][key_type] = []
                 if key_name not in swagger['_result'][key_type]:
                     swagger['_result'][key_type].append(key_name)
                 print_extras(context, key=key_name)
                 added = True
 
     # X = y.getExtras()
-    getextras_match = re.search("([a-zA-Z\.]+) = [a-zA-Z\.\(\)]+\.getExtras\(\)", context['line'])
+    getextras_match = re.search('([a-zA-Z\\.]+) = [a-zA-Z\\.\\(\\)]+\\.getExtras\\(\\)', context['line'])
     if getextras_match:
         var = getextras_match.group(1)
         if context['current_class'] not in swagger['_parsing']:
-            swagger['_parsing'][context['current_class']] = dict()
+            swagger['_parsing'][context['current_class']] = {}
         if var not in swagger['_parsing'][context['current_class']]:
             swagger['_parsing'][context['current_class']][var] = ''
 
     # .getXExtra("Y"
-    getextra_match = re.search("\.get([a-zA-Z]+)Extra\(", context['line'])
+    getextra_match = re.search('\\.get([a-zA-Z]+)Extra\\(', context['line'])
     if getextra_match:
         key_type = getextra_match.group(1)
         key_name = '_unknown'
-        key_match = re.search("\.get[a-zA-Z]+\(\"?([a-zA-Z\_\.]+)\"?", context['line'])
+        key_match = re.search('\\.get[a-zA-Z]+\\(\"?([a-zA-Z_\\.]+)\"?', context['line'])
         if key_match:
             key_name = key_match.group(1)
         if key_type not in swagger['_result']:
-            swagger['_result'][key_type] = list()
+            swagger['_result'][key_type] = []
         if key_name not in swagger['_result'][key_type]:
             swagger['_result'][key_type].append(key_name)
         print_extras(context, key=key_name)
         added = True
 
-    if not added and re.search("\.(get|has)[a-zA-Z]*Extras?\(", context['line']):
+    if not added and re.search('\\.(get|has)[a-zA-Z]*Extras?\\(', context['line']):
         print_extras(context)
 
     return swagger
@@ -139,7 +139,7 @@ def read_manifest(manifest_file, verbosity=False):
 
     exported_activities = []
 
-    for activity in root.findall(".//activity"):
+    for activity in root.findall('.//activity'):
         activity_name = activity.get('{http://schemas.android.com/apk/res/android}name')
         is_exported = activity.get('{http://schemas.android.com/apk/res/android}exported')
         if is_exported and is_exported.lower() == 'true':
@@ -148,7 +148,7 @@ def read_manifest(manifest_file, verbosity=False):
     for activity in exported_activities:
         print(activity)
 
-def get_activity_params(activity, swagger, is_recursive=False, verbosity=False):
+def get_activity_params(activity, swagger, base_directory, is_recursive=False, verbosity=False):
     """
     Returns the Activity parameters
     """
@@ -156,7 +156,7 @@ def get_activity_params(activity, swagger, is_recursive=False, verbosity=False):
     # Activity name can be override by a '$'
     if '$' in activity_name:
         activity_name = activity_name.split('$')[1]
-    activity_file_path_str = activity.replace('.', '/').split('$')[0] + '.java'
+    activity_file_path_str = base_directory + '/' + activity.replace('.', '/').split('$')[0] + '.java'
 
     if not Path(activity_file_path_str).exists():
         if Path('sources/'+activity_file_path_str).exists():
@@ -200,7 +200,7 @@ def get_activity_params(activity, swagger, is_recursive=False, verbosity=False):
                 if f'.{parent_name};' in line and line.startswith('import'):
                     parent = line.split()[1].split(';')[0]
         if parent:
-            get_activity_params(parent, swagger, is_recursive=True, verbosity=verbosity)
+            get_activity_params(parent, swagger, base_directory, is_recursive=True, verbosity=verbosity)
 
 def print_adb_helper(swagger, activity, package):
     """
@@ -282,12 +282,14 @@ def main():
                         default=False, help='Verbose output.')
     parser.add_argument('--read-manifest', '-r', action='store_true',
                         default=False, help='Read AndroidManifest.xml and extract exported activities.')
+    parser.add_argument('--directory', '-d', action='store',
+                        default='.', help='Base directory')
     args = parser.parse_args()
     if args.read_manifest:
         read_manifest(args.activity, verbosity=args.verbose)
     else:
         swagger = {'_result': {}, '_parsing': {}}
-        get_activity_params(args.activity, swagger, verbosity=args.verbose)
+        get_activity_params(args.activity, swagger, args.directory, verbosity=args.verbose)
         print(json.dumps(swagger['_result'], sort_keys=True, indent=4, separators=(',', ': ')))
         if args.adb:
             if not args.package:

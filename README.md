@@ -16,7 +16,7 @@ $ cd decompiled_apk/
 
 ```bash
 $ python Android_Activity_Swagger.py --help
-usage: Android_Activity_Swagger.py [-h] [--version] [--package PACKAGE] [--adb] [--verbose] [--read-manifest] activity
+usage: Android_Activity_Swagger.py [-h] [--version] [--package PACKAGE] [--adb] [--verbose] [--read-manifest] [--directory DIRECTORY] activity
 
 positional arguments:
   activity              Activity
@@ -29,6 +29,8 @@ options:
   --adb, -a             ADB helper.
   --verbose, -v         Verbose output.
   --read-manifest, -r   Read AndroidManifest.xml and extract exported activities.
+  --directory DIRECTORY, -d DIRECTORY
+                        Base directory
 ```
 
 ## Examples
@@ -45,16 +47,14 @@ com.example.ui.RoutingActivity
 
 ```bash
 # Display com.example.activity.WrongName
-$ cd tests/
-
-$ python ../Android_Activity_Swagger.py com.example.activity.WrongName
-[com/example/activity/WrongName.java:+43] [onCreate]                 this.f4672b = getIntent().getExtras();
-[com/example/activity/WrongName.java:+53] [onCreate]             if (this.f4672b != null && this.f4672b.getBoolean("open_from_notification", false)) {
-[com/example/activity/WrongName.java:+54] [onCreate]                 if (this.f4672b.getBoolean("open_from_reminder_notification", false)) {
-[com/example/activity/WrongName.java:+56] [onCreate]                 } else if (this.f4672b.getBoolean("open_from_abandonned_cart_notification", false)) {
-[com/example/activity/WrongName.java:+61] [onCreate]                 this.g = this.f4672b.getInt("intent_request_code", -1);
-[com/example/activity/WrongName.java:+62] [onCreate]                 this.e = this.f4672b.getBoolean("from_deeplink");
-[com/example/activity/WrongName.java:+77] [extractData]                 str = getIntent().getDataString();
+$ python Android_Activity_Swagger.py com.example.activity.WrongName -d tests/
+[tests/com/example/activity/WrongName.java:+43] [onCreate]                 this.f4672b = getIntent().getExtras();
+[tests/com/example/activity/WrongName.java:+53] [onCreate]             if (this.f4672b != null && this.f4672b.getBoolean("open_from_notification", false)) {
+[tests/com/example/activity/WrongName.java:+54] [onCreate]                 if (this.f4672b.getBoolean("open_from_reminder_notification", false)) {
+[tests/com/example/activity/WrongName.java:+56] [onCreate]                 } else if (this.f4672b.getBoolean("open_from_abandonned_cart_notification", false)) {
+[tests/com/example/activity/WrongName.java:+61] [onCreate]                 this.g = this.f4672b.getInt("intent_request_code", -1);
+[tests/com/example/activity/WrongName.java:+62] [onCreate]                 this.e = this.f4672b.getBoolean("from_deeplink");
+[tests/com/example/activity/WrongName.java:+77] [extractData]                 str = getIntent().getDataString();
 {
     "Boolean": [
         "open_from_notification",
@@ -71,16 +71,16 @@ $ python ../Android_Activity_Swagger.py com.example.activity.WrongName
 
 ```bash
 # Display com.example.activity.WrongName with verbosity
-$ python ../Android_Activity_Swagger.py com.example.activity.WrongName --verbose
+$ python Android_Activity_Swagger.py com.example.activity.WrongName -d tests/ --verbose
 Found activity: com.example.activity.WrongName
-Activity's file path: com/example/activity/WrongName.java
-[com/example/activity/WrongName.java:+43] [onCreate]                 this.f4672b = getIntent().getExtras();
-[com/example/activity/WrongName.java:+53] [onCreate]             if (this.f4672b != null && this.f4672b.getBoolean("open_from_notification", false)) {
-[com/example/activity/WrongName.java:+54] [onCreate]                 if (this.f4672b.getBoolean("open_from_reminder_notification", false)) {
-[com/example/activity/WrongName.java:+56] [onCreate]                 } else if (this.f4672b.getBoolean("open_from_abandonned_cart_notification", false)) {
-[com/example/activity/WrongName.java:+61] [onCreate]                 this.g = this.f4672b.getInt("intent_request_code", -1);
-[com/example/activity/WrongName.java:+62] [onCreate]                 this.e = this.f4672b.getBoolean("from_deeplink");
-[com/example/activity/WrongName.java:+77] [extractData]                 str = getIntent().getDataString();
+Activity's file path: tests/com/example/activity/WrongName.java
+[tests/com/example/activity/WrongName.java:+43] [onCreate]                 this.f4672b = getIntent().getExtras();
+[tests/com/example/activity/WrongName.java:+53] [onCreate]             if (this.f4672b != null && this.f4672b.getBoolean("open_from_notification", false)) {
+[tests/com/example/activity/WrongName.java:+54] [onCreate]                 if (this.f4672b.getBoolean("open_from_reminder_notification", false)) {
+[tests/com/example/activity/WrongName.java:+56] [onCreate]                 } else if (this.f4672b.getBoolean("open_from_abandonned_cart_notification", false)) {
+[tests/com/example/activity/WrongName.java:+61] [onCreate]                 this.g = this.f4672b.getInt("intent_request_code", -1);
+[tests/com/example/activity/WrongName.java:+62] [onCreate]                 this.e = this.f4672b.getBoolean("from_deeplink");
+[tests/com/example/activity/WrongName.java:+77] [extractData]                 str = getIntent().getDataString();
 Found parent: Activity
 
 {
@@ -99,14 +99,14 @@ Found parent: Activity
 
 ```bash
 # Display com.example.activity.WrongName with some adb command example
-$ python ../Android_Activity_Swagger.py com.example.activity.WrongName -p com.example --adb
-[com/example/activity/WrongName.java:+43] [onCreate]                 this.f4672b = getIntent().getExtras();
-[com/example/activity/WrongName.java:+53] [onCreate]             if (this.f4672b != null && this.f4672b.getBoolean("open_from_notification", false)) {
-[com/example/activity/WrongName.java:+54] [onCreate]                 if (this.f4672b.getBoolean("open_from_reminder_notification", false)) {
-[com/example/activity/WrongName.java:+56] [onCreate]                 } else if (this.f4672b.getBoolean("open_from_abandonned_cart_notification", false)) {
-[com/example/activity/WrongName.java:+61] [onCreate]                 this.g = this.f4672b.getInt("intent_request_code", -1);
-[com/example/activity/WrongName.java:+62] [onCreate]                 this.e = this.f4672b.getBoolean("from_deeplink");
-[com/example/activity/WrongName.java:+77] [extractData]                 str = getIntent().getDataString();
+$ python Android_Activity_Swagger.py com.example.activity.WrongName -d tests/ -p com.example --adb
+[tests/com/example/activity/WrongName.java:+43] [onCreate]                 this.f4672b = getIntent().getExtras();
+[tests/com/example/activity/WrongName.java:+53] [onCreate]             if (this.f4672b != null && this.f4672b.getBoolean("open_from_notification", false)) {
+[tests/com/example/activity/WrongName.java:+54] [onCreate]                 if (this.f4672b.getBoolean("open_from_reminder_notification", false)) {
+[tests/com/example/activity/WrongName.java:+56] [onCreate]                 } else if (this.f4672b.getBoolean("open_from_abandonned_cart_notification", false)) {
+[tests/com/example/activity/WrongName.java:+61] [onCreate]                 this.g = this.f4672b.getInt("intent_request_code", -1);
+[tests/com/example/activity/WrongName.java:+62] [onCreate]                 this.e = this.f4672b.getBoolean("from_deeplink");
+[tests/com/example/activity/WrongName.java:+77] [extractData]                 str = getIntent().getDataString();
 {
     "Boolean": [
         "open_from_notification",
@@ -130,12 +130,13 @@ adb shell am start -n com.example/com.example.activity.WrongName -d https://gith
 ## Tests
 
 ```bash
-cd tests/
-../Android_Activity_Swagger.py com.example.activity.WrongName
-../Android_Activity_Swagger.py 'com.example.activity.WrongName$TrueName'
-../Android_Activity_Swagger.py com.example.activity.MyLauncherActivity
-../Android_Activity_Swagger.py com.example.ui.RoutingActivity
-../Android_Activity_Swagger.py com.example.ui.RoutingActivity -p com.example --adb
+$ pytest
+
+# Android_Activity_Swagger.py com.example.activity.WrongName -d tests/
+# Android_Activity_Swagger.py 'com.example.activity.WrongName$TrueName' -d tests/
+# Android_Activity_Swagger.py com.example.activity.MyLauncherActivity -d tests/
+# Android_Activity_Swagger.py com.example.ui.RoutingActivity -d tests/
+# Android_Activity_Swagger.py com.example.ui.RoutingActivity -d tests/ -p com.example --adb
 ```
 
 ## License
