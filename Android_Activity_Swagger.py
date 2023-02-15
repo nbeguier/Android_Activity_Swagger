@@ -45,7 +45,9 @@ def print_extras(context, key=None):
     """
     Display found extra
     """
-    color_line = re.sub('(get|has)[a-zA-Z]*Extras?', lambda m: f'\x1b[38;5;75m{m.group()}\x1b[0m', context['line'][:-1])
+    color_line = re.sub(
+        '(get|has)[a-zA-Z]*Extras?', lambda m: f'\x1b[38;5;75m{m.group()}\x1b[0m',
+        context['line'][:-1])
     if key is not None:
         color_line = re.sub(key, lambda m: f'\x1b[38;5;76m{m.group()}\x1b[0m', color_line)
     print(f"[{context['activity_file_path']}:+{context['line_n']}] [{context['current_class']}] {color_line}")
@@ -56,7 +58,9 @@ def print_data(context):
     Display found data
     """
     if re.search('\\.getData[a-zA-Z]*\\(', context['line']):
-        color_line = re.sub('getData[a-zA-Z]*', lambda m: f'\x1b[38;5;76m{m.group()}\x1b[0m', context['line'][:-1])
+        color_line = re.sub(
+            'getData[a-zA-Z]*', lambda m: f'\x1b[38;5;76m{m.group()}\x1b[0m',
+            context['line'][:-1])
         print(f"[{context['activity_file_path']}:+{context['line_n']}] [{context['current_class']}] {color_line}")
         return True
     return False
@@ -83,7 +87,9 @@ def update_swagger(context, swagger):
             if type_match:
                 key_type = type_match.group(1)
                 key_name = '_unknown'
-                key_match = re.search(f'{var}\\.get[a-zA-Z]+\\(\"?([a-zA-Z_\\.]+)\"?', context['line'])
+                key_match = re.search(
+                    f'{var}\\.get[a-zA-Z]+\\(\"?([a-zA-Z_\\.]+)\"?',
+                    context['line'])
                 if key_match:
                     key_name = key_match.group(1)
                 if key_type not in swagger['_result']:
@@ -94,7 +100,9 @@ def update_swagger(context, swagger):
                 added = True
 
     # X = y.getExtras()
-    getextras_match = re.search('([a-zA-Z\\.]+) = [a-zA-Z\\.\\(\\)]+\\.getExtras\\(\\)', context['line'])
+    getextras_match = re.search(
+        '([a-zA-Z\\.]+) = [a-zA-Z\\.\\(\\)]+\\.getExtras\\(\\)',
+        context['line'])
     if getextras_match:
         var = getextras_match.group(1)
         if context['current_class'] not in swagger['_parsing']:
