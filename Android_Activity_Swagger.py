@@ -23,19 +23,19 @@ Written by Nicolas BEGUIER (nicolas_beguier@hotmail.com)
 # Standard library imports
 from argparse import ArgumentParser
 import json
-import os
+from pathlib import Path
 import re
 
 # Debug
 # from pdb import set_trace as st
 
-VERSION = '1.2.0'
+VERSION = '1.3.0'
 
 def update_class(current_class, line):
     """
     Updates the current class if a new is found in line
     """
-    match = re.search("(public|private) [a-zA-Z\ ]+ ([a-zA-Z]+)\(", line)
+    match = re.search('(public|private) [a-zA-Z\ ]+ ([a-zA-Z]+)\(', line)
     if match:
         return match.group(2)
     return current_class
@@ -44,19 +44,19 @@ def print_extras(context, key=None):
     """
     Display found extra
     """
-    color_line = re.sub("(get|has)[a-zA-Z]*Extras?", lambda m: "\x1b[38;5;75m{}\x1b[0m".format(m.group()), context['line'][:-1])
+    color_line = re.sub('(get|has)[a-zA-Z]*Extras?', lambda m: f'\x1b[38;5;75m{m.group()}\x1b[0m', context['line'][:-1])
     if key is not None:
-        color_line = re.sub(key, lambda m: "\x1b[38;5;76m{}\x1b[0m".format(m.group()), color_line)
-    print("[{}:+{}] [{}] {}".format(context['activity_file_path'], context['line_n'], context['current_class'], color_line))
+        color_line = re.sub(key, lambda m: f'\x1b[38;5;76m{m.group()}\x1b[0m', color_line)
+    print(f"[{context['activity_file_path']}:+{context['line_n']}] [{context['current_class']}] {color_line}")
     return True
 
 def print_data(context):
     """
     Display found data
     """
-    if re.search("\.getData[a-zA-Z]*\(", context['line']):
-        color_line = re.sub("getData[a-zA-Z]*", lambda m: "\x1b[38;5;76m{}\x1b[0m".format(m.group()), context['line'][:-1])
-        print("[{}:+{}] [{}] {}".format(context['activity_file_path'], context['line_n'], context['current_class'], color_line))
+    if re.search('\.getData[a-zA-Z]*\(', context['line']):
+        color_line = re.sub('getData[a-zA-Z]*', lambda m: f'\x1b[38;5;76m{m.group()}\x1b[0m', context['line'][:-1])
+        print(f"[{context['activity_file_path']}:+{context['line_n']}] [{context['current_class']}] {color_line}")
         return True
     return False
 
@@ -66,8 +66,8 @@ def update_parent(value, line, activity_name):
     """
     if value is not None:
         return value
-    if "class {}".format(activity_name) in line and "extends" in line:
-        return line.split("extends")[1].split()[0]
+    if f'class {activity_name}' in line and 'extends' in line:
+        return line.split('extends')[1].split()[0]
     return None
 
 def update_swagger(context, swagger):
@@ -129,23 +129,24 @@ def get_activity_params(activity, swagger, is_recursive=False, verbosity=False):
     # Activity name can be override by a '$'
     if '$' in activity_name:
         activity_name = activity_name.split('$')[1]
-    activity_file_path = activity.replace(".", "/").split('$')[0] + ".java"
+    activity_file_path_str = activity.replace('.', '/').split('$')[0] + '.java'
 
-    if not os.path.exists(activity_file_path):
-        if os.path.exists('sources/'+activity_file_path):
-            activity_file_path = 'sources/'+activity_file_path
+    if not Path(activity_file_path_str).exists():
+        if Path('sources/'+activity_file_path_str).exists():
+            activity_file_path_str = Path('sources/'+activity_file_path_str)
         else:
             if not is_recursive:
-                print("{} doesn't exist !".format(activity_file_path))
+                print(f"{activity_file_path_str} doesn't exist !")
             return
+    activity_file_path = Path(activity_file_path_str)
 
     if verbosity:
-        print("Found activity: {}".format(activity))
-        print("Activity's file path: {}".format(activity_file_path))
+        print(f'Found activity: {activity}')
+        print(f'Activity\'s file path: {activity_file_path}')
 
     parent_name = None
 
-    with open(activity_file_path, "r") as activity_file:
+    with activity_file_path.open('r', encoding='utf-8') as activity_file:
         line_n = 1
         current_class = None
         for line in activity_file.readlines():
@@ -164,13 +165,13 @@ def get_activity_params(activity, swagger, is_recursive=False, verbosity=False):
 
     if parent_name:
         if verbosity:
-            print("Found parent: {}".format(parent_name))
-            print("")
+            print(f'Found parent: {parent_name}')
+            print('')
         parent = None
-        with open(activity_file_path, "r") as activity_file:
+        with activity_file_path.open('r', encoding='utf-8') as activity_file:
             for line in activity_file.readlines():
-                if ".{};".format(parent_name) in line and line.startswith("import"):
-                    parent = line.split()[1].split(";")[0]
+                if f'.{parent_name};' in line and line.startswith('import'):
+                    parent = line.split()[1].split(';')[0]
         if parent:
             get_activity_params(parent, swagger, is_recursive=True, verbosity=verbosity)
 
@@ -246,14 +247,14 @@ def main():
         'activity',
         action='store',
         help='Activity')
-    parser.add_argument("--package", "-p", action="store",
-                                help="Package.")
-    parser.add_argument("--adb", "-a", action="store_true",
-                        default=False, help="ADB helper.")
-    parser.add_argument("--verbose", "-v", action="store_true",
-                        default=False, help="Verbose output.")
+    parser.add_argument('--package', '-p', action='store',
+                                help='Package.')
+    parser.add_argument('--adb', '-a', action='store_true',
+                        default=False, help='ADB helper.')
+    parser.add_argument('--verbose', '-v', action='store_true',
+                        default=False, help='Verbose output.')
     args = parser.parse_args()
-    swagger = {'_result': dict(), '_parsing': dict()}
+    swagger = {'_result': {}, '_parsing': {}}
     get_activity_params(args.activity, swagger, verbosity=args.verbose)
     print(json.dumps(swagger['_result'], sort_keys=True, indent=4, separators=(',', ': ')))
     if args.adb:

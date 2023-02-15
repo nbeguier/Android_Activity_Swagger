@@ -2,8 +2,17 @@
 
 Give the Swagger (or hints) of Android Activities from apk
 
-## Usage
+## Prerequisites
 
+You need a decompiled apk file, using jadx for instance:
+
+```bash
+$ ls base.apk
+$ jadx base.apk -d decompiled_apk/
+$ cd decompiled_apk/
+```
+
+## Usage
 
 ```
 $ python3 Android_Activity_Swagger.py --help
