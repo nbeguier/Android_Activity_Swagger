@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android" android:versionCode="109" android:versionName="1.09" android:compileSdkVersion="31" android:compileSdkVersionCodename="12" package="com.example" platformBuildVersionCode="31" platformBuildVersionName="12">
+    <uses-sdk android:minSdkVersion="26" android:targetSdkVersion="31"/>
+    <uses-permission android:name="android.permission.WAKE_LOCK"/>
+    <uses-permission android:name="android.permission.INTERNET"/>
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
+    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE"/>
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
+    <application android:theme="@style/Theme_Example" android:label="@string/app_name" android:icon="@mipmap/logo512" android:allowBackup="true" android:supportsRtl="true" android:extractNativeLibs="false" android:resizeableActivity="false" android:appComponentFactory="androidx.core.app.CoreComponentFactory" android:isSplitRequired="true" android:localeConfig="@xml/locales_config">
+        <activity android:name="com.example.activity.MyLauncherActivity" android:exported="true" android:screenOrientation="landscape" android:configChanges="orientation|screenSize">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN"/>
+                <category android:name="android.intent.category.LAUNCHER"/>
+            </intent-filter>
+        </activity>
+        <activity android:theme="@style/Wrong_Activity" android:name="com.example.activity.WrongName" android:exported="true" android:launchMode="singleTask"/>
+        <activity android:theme="@style/NotExported_Activity" android:name="com.example.activity.notExported" android:exported="false" android:launchMode="singleTask"/>
+        <activity android:theme="@style/Routing_Activity" android:name="com.example.ui.RoutingActivity" android:exported="true" android:launchMode="singleTask"/>
+        <provider android:name="androidx.startup.InitializationProvider" android:exported="false" android:authorities="com.example.androidx-startup">
+            <meta-data android:name="androidx.emoji2.text.EmojiCompatInitializer" android:value="androidx.startup"/>
+            <meta-data android:name="androidx.lifecycle.ProcessLifecycleInitializer" android:value="androidx.startup"/>
+        </provider>
+        <meta-data android:name="com.android.vending.splits.required" android:value="true"/>
+        <meta-data android:name="com.android.stamp.source" android:value="https://play.google.com/store"/>
+        <meta-data android:name="com.android.stamp.type" android:value="STAMP_TYPE_DISTRIBUTION_APK"/>
+        <meta-data android:name="com.android.vending.splits" android:resource="@xml/splits0"/>
+        <meta-data android:name="com.android.vending.derived.apk.id" android:value="2"/>
+    </application>
+</manifest>
