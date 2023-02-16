@@ -248,6 +248,7 @@ def print_adb_helper(swagger, activity, package):
         'Long': '--el',
         'Float': '--ef',
         'data-uri': '-d',
+        'StringArray': '--esa',
     }
     adb_default_value_map = {
         'String': '"some_string"',
@@ -256,10 +257,11 @@ def print_adb_helper(swagger, activity, package):
         'Long': '0',
         'Float': '0',
         'data-uri': 'https://github.com/nbeguier/',
+        'StringArray': '"some_string","some_other_string"',
     }
     for extra_type in swagger:
         # Ignore extra types
-        if extra_type in ['Parcelable']:
+        if extra_type in ['Parcelable', 'Bundle']:
             continue
         # Data-uri type
         if extra_type == 'data-uri':
