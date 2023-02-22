@@ -30,7 +30,7 @@ import xml.etree.ElementTree as ET
 # Debug
 # from pdb import set_trace as st
 
-VERSION = '1.3.0'
+VERSION = '1.3.1'
 
 def update_class(current_class, line):
     """
@@ -243,25 +243,29 @@ def print_adb_helper(swagger, activity, package):
     """
     adb_args_map = {
         'String': '--es',
+        'CharSequence': '--es',
         'Boolean': '--ez',
         'Int': '--ei',
         'Long': '--el',
         'Float': '--ef',
         'data-uri': '-d',
         'StringArray': '--esa',
+        'StringArrayList': '--esa',
     }
     adb_default_value_map = {
         'String': '"some_string"',
+        'CharSequence': '"some_string"',
         'Boolean': 'true',
         'Int': '0',
         'Long': '0',
         'Float': '0',
         'data-uri': 'https://github.com/nbeguier/',
         'StringArray': '"some_string","some_other_string"',
+        'StringArrayList': '"some_string","some_other_string"',
     }
     for extra_type in swagger:
         # Ignore extra types
-        if extra_type in ['Parcelable', 'Bundle']:
+        if extra_type in ['Parcelable', 'ParcelableArrayList', 'Bundle', 'Serializable']:
             continue
         # Data-uri type
         if extra_type == 'data-uri':
